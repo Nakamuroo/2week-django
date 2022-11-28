@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Профиль{% endblock %}
+{% block links %}
+<link rel="stylesheet" href="{% static 'profile.css'%}">
+{% endblock %}
+{% block content %}
+
+<section class="wrapper">
+    <div class="top">Профиль</div>
+    <div class="bottom" aria-hidden="true">Профиль</div>
+  </section>
+<div class="container">
+    <button class="btn-1" ><span><a href="{% url 'profile_applications' %}">Заявки</a></span></button>
+    <button class="btn-1" ><span><a href="{% url 'logout' %}">Выйти</a></span></button>
+</div>
+{% endblock %}
