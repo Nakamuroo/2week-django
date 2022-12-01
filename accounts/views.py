@@ -1,12 +1,14 @@
 from urllib import request
 from django.shortcuts import render, HttpResponseRedirect, redirect
 from django.utils.translation import gettext_lazy as _
-from .forms import UserRegistrationForm, ApplicationCreateForm
+from .forms import UserRegistrationForm, ApplicationCreateForm, CategoryForm
 from django.views import generic
-from .models import Application
+from .models import Application, Category
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.urls import reverse_lazy, reverse
+from .filters import CategoryFilters
+
 
 def register(request):
     if request.method == 'POST':
@@ -19,21 +21,25 @@ def register(request):
             # Save the User object
             new_user.save()
             return render(request, 'registration/register_done.html', {'new_user': new_user})
-                
+
     else:
         user_form = UserRegistrationForm()
     return render(request, 'registration/register.html', {'user_form': user_form})
+
 
 def password_reset(request):
     return render(
         request,
         'registration/password_reset.html'
     )
+
+
 def profile(request):
     return render(
         request,
         'registration/profile.html'
     )
+
 
 class view_applications(generic.ListView):
     model = Application
@@ -60,12 +66,14 @@ class view_applications(generic.ListView):
             else:
                 return Application.objects.filter(user__exact=self.request.user.id, status=ordering)
 
+
 def get_error(request):
     return render(
         request,
         'accounts/error.html'
     )
-    
+
+
 class profile_main_applications(generic.ListView):
     model = Application
     paginate_by = 4
@@ -75,23 +83,22 @@ class profile_main_applications(generic.ListView):
         context['count_of_load'] = Application.objects.filter(status='load').count()
         context['is_main'] = True;
         return context
-    
+
     def get_queryset(self):
         return Application.objects.filter(status='ready')
-
 
 
 class create_application(CreateView):
     model = Application
     fields = ('title', 'desc', 'img')
 
-
     def form_valid(self, form):
         fields = form.save(commit=False)
         fields.user = self.request.user
         fields.save()
-       
+
         return super().form_valid(form)
+
 
 class detail_application(DetailView):
     model = Application
@@ -112,6 +119,7 @@ class delete_application(DeleteView):
             success_url = reverse_lazy('profile_applications')
             success_msg = 'Запись удалена'
             return HttpResponseRedirect(success_url, success_msg)
+
 
 class update_application(UpdateView):
     model = Application
@@ -135,3 +143,25 @@ class update_application(UpdateView):
 
         return context
 
+
+class CreateCategoryView(CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'accounts/create_category.html'
+    success_url = reverse_lazy('category_control')
+
+
+class CategoryControl(ListView):
+    model = Category
+    template_name = 'accounts/category_control.html'
+
+
+class DeleteCategoryView(DeleteView):
+    model = Category
+    success_url = reverse_lazy('category_control')
+    template_name = 'accounts/delete_category.html'
+
+
+def IndexView(request):
+    f = CategoryFilters(request.GET, queryset=Application.objects.filter(status='ready'))
+    return render(request, 'accounts/category_control.html', {'filter': f})

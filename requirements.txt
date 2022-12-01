@@ -19,3 +19,5 @@ social-auth-core==4.3.0
 sqlparse==0.4.3
 urllib3==1.26.12
 django
+django-crispy-forms
+django-filter

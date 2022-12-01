@@ -4,12 +4,13 @@ from django.views import generic
 from accounts.models import Application
 import datetime
 
-def index(request):
 
+def index(request):
     return render(
         request,
         'app/about.html'
     )
+
 
 class main(generic.ListView):
     model = Application
